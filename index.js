@@ -13,18 +13,25 @@ dotenv.config();
 
 app.use(cors());
 app.use(express.json());
-app.use('/uploads', express.static('uploads'));
+app.use("/uploads", express.static("uploads"));
 
 mongoose.set("strictQuery", false);
-mongoose.connect(process.env.DATABASE_URL, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
 
-const db = mongoose.connection;
+const connectDB = async () => {
+  try {
+    mongoose.connect(process.env.DATABASE_URL, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    const db = mongoose.connection;
 
-db.on("error", (err) => console.error(err));
-db.once("open", () => console.log("Connected to MongoDB!"));
+    db.on("error", (err) => console.error(err));
+    db.once("open", () => console.log("Connected to MongoDB!"));
+  } catch {
+    console.log(error);
+    process.exit(1);
+  }
+};
 
 // Define the storage for file uploads using Multer
 const storage = multer.diskStorage({
@@ -34,7 +41,7 @@ const storage = multer.diskStorage({
   },
   // Define the filename for the uploaded file
   filename: (req, file, cb) => {
-    cb(null, req.body.name); 
+    cb(null, req.body.name);
   },
 });
 // Create a Multer instance with the defined storage configuration
@@ -46,9 +53,12 @@ app.post("/api/upload", upload.single("file"), (req, res) => {
   res.status(200).json({ filename });
 });
 
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept"
+  );
   next();
 });
 
@@ -61,4 +71,8 @@ app.get("/", (req, res) => {
   res.send("Server Running");
 });
 
-app.listen(process.env.PORT || 5000, () => console.log("Server running on " + process.env.API_URL));
+connectDB().then(() => {
+  app.listen(process.env.PORT || 5000, () =>
+    console.log("Server running on " + process.env.API_URL)
+  );
+});
