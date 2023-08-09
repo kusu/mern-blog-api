@@ -53,15 +53,6 @@ app.post("/api/upload", upload.single("file"), (req, res) => {
   res.status(200).json({ filename });
 });
 
-app.use(function (req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept"
-  );
-  next();
-});
-
 app.use("/api/auth", authRoutes);
 app.use("/api/users", authUsers);
 app.use("/api/blog", blogRoutes);
